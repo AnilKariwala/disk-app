@@ -3,13 +3,15 @@
 <head>
 <!--
   Script Name : DISK app shell (index.html)
-  Version     : 2.0.0
+  Version     : 2.1.0
   Last Edit   : 05-Nov-26
   Change Log  :
     1.0.0 | 05-Nov-26 | Shell loads the Apps Script page in an iframe; splash and install icons
     2.0.0 | 05-Nov-26 | Shell reads the figures itself from the JSON mode of the same web app
             (fetch, no Google cookies, no iframe), so signed-in browsers are no longer
             redirected to a Google sign-in page. Same look; splash and retry screen kept.
+    2.1.0 | 05-Nov-26 | Shows the last figures saved on this phone at once, then refreshes them
+            from the web app (the web app itself needs about 5 s to answer).
 -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -234,11 +236,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     hideSplash('data');
   }
   function load(force, done){
-    var my = ++seq, t1 = performance.now();
+    var my = ++seq, t1 = performance.now(), ck = 'diskD_' + base();
+    if (!force) { try { var c = localStorage.getItem(ck); if (c) { render(JSON.parse(c)); } } catch (e) {} }   // last figures from this phone, shown at once
     getJson(EXEC + '?' + base() + (force ? '&r=1' : '')).then(function(d){
       if (my !== seq) return;
-      if (!d || d.error) { if (d && d.error === 'invalid') { if (KEY.g && CUR) { CUR = ''; KEY.i = ''; load(force, done); return; } invalid(); } else showError(); }
-      else { if (T.fetch === null) T.fetch = Math.round(performance.now() - t1); render(d); }
+      if (!d || d.error) { if (d && d.error === 'invalid') { if (KEY.g && CUR) { CUR = ''; KEY.i = ''; load(force, done); return; } try { localStorage.removeItem(ck); } catch (e) {} invalid(); } else showError(); }
+      else { if (T.fetch === null) T.fetch = Math.round(performance.now() - t1); T.fresh = Math.round(performance.now()); render(d); try { localStorage.setItem(ck, JSON.stringify(d)); } catch (e) {} }
       if (done) done();
     }).catch(function(){ if (my !== seq) return; showError(); if (done) done(); });
   }
