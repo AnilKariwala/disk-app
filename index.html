@@ -77,6 +77,12 @@ iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#ffffff
     if (d.type === 'disk-ready') hideSplash('ready');
     else if (d.type === 'disk-error') showError();
   });
+  var q = new URLSearchParams(location.search);
+  var out = new URLSearchParams();
+  KEYS.forEach(function (k) {
+    var v = q.get(k);
+    if (v && /^[A-Za-z0-9_\-]{1,80}$/.test(v)) out.set(k, v);
+  });
   // Android opens an installed app without the query string: reuse the last link opened on this phone.
   if (!out.get('s') && !out.get('g')) {
     try {
