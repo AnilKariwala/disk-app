@@ -7,71 +7,67 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f4f5f7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#1f2a37}
-.page{width:1100px;padding:40px 44px 36px;background:#f4f5f7}
-h1{margin:0 0 4px;font-size:38px;letter-spacing:-.5px}
-.lead{margin:0 0 26px;color:#6b7a8c;font-size:18px}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.col{background:#fff;border-radius:22px;padding:22px 22px 12px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
-.col h2{margin:0 0 16px;font-size:24px;display:flex;align-items:center;gap:10px}
-.col h2 span{font-size:14px;font-weight:600;color:#6b7a8c;background:#eef0f4;border-radius:999px;padding:3px 10px}
-.step{display:grid;grid-template-columns:170px 1fr;gap:16px;align-items:center;padding:12px 0;border-top:1px solid #eef0f4}
-.step:first-of-type{border-top:0}
-.txt b{display:inline-flex;width:28px;height:28px;border-radius:50%;background:#0f766e;color:#fff;align-items:center;justify-content:center;font-size:15px;margin-right:8px}
-.txt{font-size:18px;line-height:1.35}
-.txt small{display:block;margin-top:4px;color:#6b7a8c;font-size:14px}
-.ill{width:170px;height:118px;background:#eef1f5;border-radius:16px;position:relative;overflow:hidden}
-.bar{position:absolute;left:12px;right:12px;top:12px;height:22px;border-radius:11px;background:#fff;font-size:10px;color:#6b7a8c;padding:5px 9px;white-space:nowrap;overflow:hidden}
-.page-mock{position:absolute;left:12px;right:12px;top:42px;bottom:0;border-radius:10px 10px 0 0;background:linear-gradient(135deg,#0b5f63,#312e81)}
-.page-mock i{display:block;margin:10px auto 0;width:70%;height:30px;background:#fff;border-radius:7px}
-.page-mock u{display:block;margin:8px auto 0;width:70%;height:10px;background:#fff;opacity:.35;border-radius:5px}
-.tb{position:absolute;left:0;right:0;bottom:0;height:30px;background:#fff;display:flex;justify-content:center;align-items:center}
-.share{width:22px;height:22px}
-.menu{position:absolute;right:10px;top:46px;width:112px;background:#fff;border-radius:9px;box-shadow:0 3px 12px rgba(0,0,0,.2);font-size:10px}
-.menu div{padding:6px 8px;border-bottom:1px solid #eee}
-.menu div.hl,.sheet div.hl{background:#d9f3f0;font-weight:700}
-.sheet{position:absolute;left:12px;right:12px;bottom:0;top:16px;background:#fff;border-radius:12px 12px 0 0;font-size:10px;box-shadow:0 -2px 10px rgba(0,0,0,.15)}
+.page{width:1180px;padding:22px 26px 14px;background:#f4f5f7}
+h1{margin:0 0 2px;font-size:30px;letter-spacing:-.4px}
+.lead{margin:0 0 12px;color:#6b7a8c;font-size:15px}
+.row{display:grid;grid-template-columns:96px repeat(4,1fr);gap:12px;margin-bottom:12px}
+.who{background:#0f766e;color:#fff;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:20px;padding:8px}
+.who span{display:block;font-size:12px;font-weight:600;opacity:.85;margin-top:4px}
+.card{background:#fff;border-radius:16px;padding:10px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.ill{height:128px;background:#eef1f5;border-radius:12px;position:relative;overflow:hidden}
+.txt{margin-top:9px;font-size:15px;line-height:1.3}
+.txt b{display:inline-flex;width:22px;height:22px;border-radius:50%;background:#0f766e;color:#fff;align-items:center;justify-content:center;font-size:12px;margin-right:6px}
+.txt small{display:block;margin-top:3px;color:#6b7a8c;font-size:12px}
+.bar{position:absolute;left:10px;right:10px;top:10px;height:20px;border-radius:10px;background:#fff;font-size:9px;color:#6b7a8c;padding:5px 8px;white-space:nowrap;overflow:hidden}
+.pm{position:absolute;left:10px;right:10px;top:38px;bottom:0;border-radius:9px 9px 0 0;background:linear-gradient(135deg,#0b5f63,#312e81)}
+.pm i{display:block;margin:9px auto 0;width:70%;height:28px;background:#fff;border-radius:7px}
+.pm u{display:block;margin:7px auto 0;width:70%;height:9px;background:#fff;opacity:.35;border-radius:5px}
+.tb{position:absolute;left:0;right:0;bottom:0;height:28px;background:#fff;display:flex;justify-content:center;align-items:center}
+.tb svg{width:20px;height:20px}
+.menu{position:absolute;background:#fff;border-radius:8px;box-shadow:0 3px 12px rgba(0,0,0,.22);font-size:10px;overflow:hidden}
+.menu div{padding:6px 9px;border-bottom:1px solid #eee}
+.hl{background:#d9f3f0;font-weight:700}
+.sheet{position:absolute;left:14px;right:14px;bottom:0;top:14px;background:#fff;border-radius:11px 11px 0 0;font-size:10px;box-shadow:0 -2px 10px rgba(0,0,0,.15);overflow:hidden}
 .sheet div{padding:7px 10px;border-bottom:1px solid #eee}
 .home{background:linear-gradient(160deg,#6aa7d9,#3a5fa8)}
-.tile{position:absolute;left:16px;top:18px;text-align:center;color:#fff;font-size:10px;font-weight:600}
-.tile img{width:50px;height:50px;border-radius:12px;display:block;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.ghost{position:absolute;width:50px;height:50px;border-radius:12px;background:rgba(255,255,255,.28)}
-.foot{margin-top:18px;color:#6b7a8c;font-size:15px;text-align:center}
+.home.a{background:linear-gradient(160deg,#4a8f7a,#2d5f6b)}
+.tile{position:absolute;left:18px;top:16px;text-align:center;color:#fff;font-size:10px;font-weight:700}
+.tile img{width:54px;height:54px;border-radius:13px;display:block;margin-bottom:3px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.ghost{position:absolute;width:54px;height:54px;border-radius:13px;background:rgba(255,255,255,.28)}
+.foot{margin:4px 0 0;color:#6b7a8c;font-size:13px;text-align:center}
 </style>
 </head>
 <body>
 <div class="page">
   <h1>Install DISK on your phone</h1>
   <p class="lead">Use the private link you were sent. It shows only your own figures. Please do not share it.</p>
-  <div class="cols">
 
-    <div class="col">
-      <h2>iPhone <span>Safari</span></h2>
-      <div class="step"><div class="ill"><div class="bar">anilkariwala.github.io/disk-app/?s=…</div><div class="page-mock"><i></i><u></u><u></u></div></div>
-        <div class="txt"><b>1</b>Open your link in <strong>Safari</strong><small>Not inside WhatsApp or Mail.</small></div></div>
-      <div class="step"><div class="ill"><div class="bar">anilkariwala.github.io/disk-app/?s=…</div><div class="page-mock"><i></i><u></u></div>
-        <div class="tb"><svg class="share" viewBox="0 0 24 24" fill="none" stroke="#0a7cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v9h14v-9h-1"/></svg></div></div>
-        <div class="txt"><b>2</b>Tap the <strong>Share</strong> button<small>The square with an arrow, at the bottom.</small></div></div>
-      <div class="step"><div class="ill"><div class="sheet"><div>Copy</div><div>Add to Bookmarks</div><div class="hl">Add to Home Screen</div><div>Print</div></div></div>
-        <div class="txt"><b>3</b>Choose <strong>Add to Home Screen</strong><small>Scroll the list if you do not see it. Tap <strong>Add</strong>.</small></div></div>
-      <div class="step"><div class="ill home"><div class="tile"><img src="icon-180.png" alt="DISK">DISK</div><div class="ghost" style="left:78px;top:18px"></div><div class="ghost" style="left:16px;top:76px;height:24px;opacity:.6"></div></div>
-        <div class="txt"><b>4</b>Open the <strong>DISK</strong> icon<small>It opens full screen, like an app.</small></div></div>
-    </div>
-
-    <div class="col">
-      <h2>Android <span>Chrome</span></h2>
-      <div class="step"><div class="ill"><div class="bar">anilkariwala.github.io/disk-app/?s=…</div><div class="page-mock"><i></i><u></u><u></u></div></div>
-        <div class="txt"><b>1</b>Open your link in <strong>Chrome</strong><small>Not inside WhatsApp or Gmail.</small></div></div>
-      <div class="step"><div class="ill"><div class="bar">anilkariwala.github.io/disk-app/?s=…</div><div class="page-mock"><i></i><u></u></div>
-        <div class="menu"><div>New tab</div><div>History</div><div class="hl">Install app</div></div>
-        <div style="position:absolute;right:8px;top:14px;font-size:16px;font-weight:700;color:#444">&#8942;</div></div>
-        <div class="txt"><b>2</b>Tap the three dots <strong>&#8942;</strong><small>Top right of Chrome.</small></div></div>
-      <div class="step"><div class="ill"><div class="menu" style="left:30px;right:30px;top:20px;width:auto"><div>Share&hellip;</div><div class="hl">Install app</div><div>Add to Home screen</div></div></div>
-        <div class="txt"><b>3</b>Choose <strong>Install app</strong><small>or <strong>Add to Home screen</strong>, then tap <strong>Install</strong>.</small></div></div>
-      <div class="step"><div class="ill home" style="background:linear-gradient(160deg,#4a8f7a,#2d5f6b)"><div class="tile"><img src="icon-180.png" alt="DISK">DISK</div><div class="ghost" style="left:78px;top:18px"></div><div class="ghost" style="left:16px;top:76px;height:24px;opacity:.6"></div></div>
-        <div class="txt"><b>4</b>Open the <strong>DISK</strong> icon<small>It opens full screen, like an app.</small></div></div>
-    </div>
-
+  <div class="row">
+    <div class="who">iPhone<span>Safari</span></div>
+    <div class="card"><div class="ill"><div class="bar">anilkariwala.github.io/disk-app/?s=…</div><div class="pm"><i></i><u></u><u></u></div></div>
+      <div class="txt"><b>1</b>Open your link in <strong>Safari</strong><small>Not inside WhatsApp or Mail.</small></div></div>
+    <div class="card"><div class="ill"><div class="bar">anilkariwala.github.io/disk-app/?s=…</div><div class="pm"><i></i><u></u></div>
+      <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="#0a7cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v9h14v-9h-1"/></svg></div></div>
+      <div class="txt"><b>2</b>Tap the <strong>Share</strong> button<small>The square with an arrow.</small></div></div>
+    <div class="card"><div class="ill"><div class="sheet"><div>Copy</div><div>Add to Bookmarks</div><div class="hl">Add to Home Screen</div><div>Print</div></div></div>
+      <div class="txt"><b>3</b>Tap <strong>Add to Home Screen</strong><small>Then tap <strong>Add</strong>.</small></div></div>
+    <div class="card"><div class="ill home"><div class="tile"><img src="icon-180.png" alt="DISK">DISK</div><div class="ghost" style="left:84px;top:16px"></div><div class="ghost" style="left:150px;top:16px"></div></div>
+      <div class="txt"><b>4</b>Open the <strong>DISK</strong> icon<small>It opens full screen, like an app.</small></div></div>
   </div>
+
+  <div class="row">
+    <div class="who">Android<span>Chrome</span></div>
+    <div class="card"><div class="ill"><div class="bar">anilkariwala.github.io/disk-app/?s=…</div><div class="pm"><i></i><u></u><u></u></div></div>
+      <div class="txt"><b>1</b>Open your link in <strong>Chrome</strong><small>Not inside WhatsApp or Gmail.</small></div></div>
+    <div class="card"><div class="ill"><div class="bar">anilkariwala.github.io/disk-app/?s=…</div><div class="pm"><i></i><u></u></div>
+      <div style="position:absolute;right:6px;top:8px;font-size:17px;font-weight:700;color:#444">&#8942;</div></div>
+      <div class="txt"><b>2</b>Tap the three dots <strong>&#8942;</strong><small>Top right of Chrome.</small></div></div>
+    <div class="card"><div class="ill"><div class="menu" style="left:24px;right:24px;top:14px"><div>Share&hellip;</div><div class="hl">Install app</div><div>Add to Home screen</div></div></div>
+      <div class="txt"><b>3</b>Tap <strong>Install app</strong><small>or <strong>Add to Home screen</strong>, then <strong>Install</strong>.</small></div></div>
+    <div class="card"><div class="ill home a"><div class="tile"><img src="icon-180.png" alt="DISK">DISK</div><div class="ghost" style="left:84px;top:16px"></div><div class="ghost" style="left:150px;top:16px"></div></div>
+      <div class="txt"><b>4</b>Open the <strong>DISK</strong> icon<small>It opens full screen, like an app.</small></div></div>
+  </div>
+
   <p class="foot">Each trading morning, open DISK and tap <strong>Generate today's token</strong> before 9:15 AM.</p>
 </div>
 </body>
