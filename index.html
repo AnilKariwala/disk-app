@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DISK</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DISK">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
+<style>
+html,body{margin:0;height:100%;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#ffffff}
+.msg{display:none;position:fixed;inset:0;align-items:center;justify-content:center;text-align:center;padding:24px;color:#1f2a37}
+.msg h2{margin:0 0 8px}
+</style>
+</head>
+<body>
+<iframe id="app" title="DISK"></iframe>
+<div class="msg" id="msg"><div><h2>Link not valid</h2><p>Please use the private link you were given.</p></div></div>
+<script>
+(function () {
+  // The DISK web app (Google Apps Script). Private links carry ?s=<sheet ID> or ?g=<group key>[&i=<investor>].
+  var EXEC = 'https://script.google.com/macros/s/AKfycbxdk0rSXzMg-Ii8NzIGRkW0KUbOAvcVY3FbDCY0mHp478te_sjhl4v2PsMrblt0JXC5fQ/exec';
+  var KEYS = ['s', 'g', 'i'];
+  var q = new URLSearchParams(location.search);
+  var out = new URLSearchParams();
+  KEYS.forEach(function (k) {
+    var v = q.get(k);
+    if (v && /^[A-Za-z0-9_\-]{1,80}$/.test(v)) out.set(k, v);
+  });
+  // Android opens an installed app without the query string: reuse the last link opened on this phone.
+  if (!out.get('s') && !out.get('g')) {
+    try {
+      var saved = new URLSearchParams(localStorage.getItem('disk') || '');
+      KEYS.forEach(function (k) { if (saved.get(k)) out.set(k, saved.get(k)); });
+    } catch (e) {}
+  }
+  if (out.get('s') || out.get('g')) {
+    try { localStorage.setItem('disk', out.toString()); } catch (e) {}
+    document.getElementById('app').src = EXEC + '?' + out.toString();
+  } else {
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('msg').style.display = 'flex';
+  }
+})();
+</script>
+</body>
+</html>
