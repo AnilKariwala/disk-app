@@ -3,13 +3,17 @@
 <head>
 <!--
   Script Name : DISK app shell (index.html)
-  Version     : 2.1.0
-  Last Edit   : 05-Nov-26
+  Version     : 2.2.0
+  Last Edit   : 06-Nov-26
   Change Log  :
     1.0.0 | 05-Nov-26 | Shell loads the Apps Script page in an iframe; splash and install icons
     2.0.0 | 05-Nov-26 | Shell reads the figures itself from the JSON mode of the same web app
             (fetch, no Google cookies, no iframe), so signed-in browsers are no longer
             redirected to a Google sign-in page. Same look; splash and retry screen kept.
+    2.2.0 | 06-Nov-26 | Token button is a real link (target _blank) whose Zerodha address is fetched in
+            advance and after every investor change; 'Preparing...' until ready. No window.open
+            on tap (blocked on Android Chrome / iOS PWAs). Figures refresh when the app becomes
+            visible again, so 'Connected today' shows after returning from Zerodha.
     2.1.0 | 05-Nov-26 | Shows the last figures saved on this phone at once, then refreshes them
             from the web app (the web app itself needs about 5 s to answer).
 -->
@@ -95,6 +99,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
 @keyframes sp{to{transform:rotate(360deg)}}
 .badmsg{display:none;position:fixed;inset:0;z-index:4;align-items:center;justify-content:center;text-align:center;padding:24px}
 .badmsg h2{margin:0 0 8px}
+.tbtn{display:block;text-align:center;text-decoration:none}
+.tbtn[aria-disabled="true"]{opacity:.6;pointer-events:none}
 </style>
 </head>
 <body>
@@ -113,7 +119,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
   </div>
 
   <div class="token">
-    <button class="tbtn" id="tbtn">Generate today's token</button>
+    <a class="tbtn" id="tbtn" target="_blank" rel="noopener" aria-disabled="true">Preparing&hellip;</a>
     <div class="chip no" id="chip"><span class="dot"></span><span id="chipTxt">Loading&hellip;</span></div>
   </div>
 
@@ -220,7 +226,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     $('chip').hidden = false;
     $('chip').className = 'chip ' + (t.tokenToday ? 'ok' : 'no');
     $('chipTxt').textContent = t.tokenToday ? 'Connected today ' + t.tokenAt : 'Not logged in today';
-    $('tbtn').textContent = t.tokenToday ? 'Regenerate token' : "Generate today's token";
+    LBL = t.tokenToday ? 'Regenerate token' : "Generate today's token"; paintBtn(); if (loginFor !== base()) prepLogin();
     var nf = $('nifty');
     if (d.nifty === null || d.nifty === undefined){ nf.textContent = '—'; nf.className = ''; }
     else { nf.textContent = (d.nifty < 0 ? '▼ ' : '▲ ') + fmtP2(d.nifty); nf.className = cls(d.nifty); }
@@ -236,7 +242,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     hideSplash('data');
   }
   function load(force, done){
-    var my = ++seq, t1 = performance.now(), ck = 'diskD_' + base();
+    var my = ++seq, t1 = lastLoad = performance.now(), ck = 'diskD_' + base();
     if (!force) { try { var c = localStorage.getItem(ck); if (c) { render(JSON.parse(c)); } } catch (e) {} }   // last figures from this phone, shown at once
     getJson(EXEC + '?' + base() + (force ? '&r=1' : '')).then(function(d){
       if (my !== seq) return;
@@ -261,19 +267,31 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     sel.onchange = function(){
       CUR = sel.value;
       try { localStorage.setItem('diskInv_' + KEY.g.slice(0, 8), CUR); } catch (e) {}
-      $('chip').hidden = true; load(false);
+      $('chip').hidden = true; loginUrl = ''; loginFor = ''; paintBtn(); load(false);
     };
     if (CUR !== first) { $('chip').hidden = true; load(false); }
   }
   // ---- buttons ----
-  $('tbtn').onclick = function(){
-    var b = $('tbtn'), old = b.textContent; b.textContent = 'Opening Zerodha login…';
-    var w = window.open('', '_blank');
-    getJson(EXEC + '?' + base().replace('api=1', 'api=login')).then(function(d){
-      if (d && d.url && w) w.location.href = d.url; else if (w) w.close();
-      b.textContent = old;
-    }).catch(function(){ if (w) w.close(); b.textContent = old; });
-  };
+  // The token button is a plain link: the Zerodha address is fetched ahead of time, so tapping does no async work.
+  var LBL = "Generate today's token", loginUrl = '', loginFor = '', loginSeq = 0;
+  function paintBtn(){
+    var b = $('tbtn');
+    if (loginUrl) { b.href = loginUrl; b.removeAttribute('aria-disabled'); b.textContent = LBL; }
+    else { b.removeAttribute('href'); b.setAttribute('aria-disabled', 'true'); b.textContent = 'Preparing\u2026'; }
+  }
+  function prepLogin(){
+    var my = ++loginSeq, f = base();
+    loginFor = f; loginUrl = ''; paintBtn();
+    getJson(EXEC + '?' + f.replace('api=1', 'api=login')).then(function(d){
+      if (my !== loginSeq) return;
+      if (d && d.url) { loginUrl = d.url; paintBtn(); } else { loginFor = ''; setTimeout(function(){ if (my === loginSeq && !loginUrl) prepLogin(); }, 4000); }
+    }).catch(function(){ if (my !== loginSeq) return; loginFor = ''; setTimeout(function(){ if (my === loginSeq && !loginUrl) prepLogin(); }, 4000); });
+  }
+  // Coming back from Zerodha (or any other app): refresh so "Connected today" shows.
+  var lastLoad = 0;
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible' && showing && performance.now() - lastLoad > 3000) load(true);
+  });
   $('alpha').onclick = function(){ var m = $('mv'); m.hidden = !m.hidden; $('hint').textContent = m.hidden ? "Tap to see today's 3 highest and 3 lowest gains" : 'Tap to hide'; };
   $('theta').onclick = function(){ var m = $('mvT'); m.hidden = !m.hidden; $('hintT').textContent = m.hidden ? 'Tap to see the 3 highest and 3 lowest gain trades' : 'Tap to hide'; };
   $('rf').onclick = function(e){ var b = e.target; b.textContent = 'Refreshing…'; load(true, function(){ b.textContent = 'Refreshed'; setTimeout(function(){ b.textContent = 'Refresh'; }, 1200); }); };
