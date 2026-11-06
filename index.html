@@ -3,13 +3,18 @@
 <head>
 <!--
   Script Name : DISK app shell (index.html)
-  Version     : 2.2.1
+  Version     : 2.3.0
   Last Edit   : 06-Nov-26
   Change Log  :
     1.0.0 | 05-Nov-26 | Shell loads the Apps Script page in an iframe; splash and install icons
     2.0.0 | 05-Nov-26 | Shell reads the figures itself from the JSON mode of the same web app
             (fetch, no Google cookies, no iframe), so signed-in browsers are no longer
             redirected to a Google sign-in page. Same look; splash and retry screen kept.
+    2.3.0 | 06-Nov-26 | Home-screen icon keeps the key: web manifest generated at run time with
+            start_url = the full private link (scope /disk-app/); key saved after the first valid
+            load and restored into the address if the app opens without one; clear message when
+            there is no key. Token button reads its Zerodha address from the figures payload
+            (no separate request, never 'Preparing').
     2.2.1 | 06-Nov-26 | Zerodha address is fetched in parallel with the figures (button ready sooner).
     2.2.0 | 06-Nov-26 | Token button is a real link (target _blank) whose Zerodha address is fetched in
             advance and after every investor change; 'Preparing...' until ready. No window.open
@@ -21,7 +26,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DISK</title>
-<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="favicon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -120,7 +124,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
   </div>
 
   <div class="token">
-    <a class="tbtn" id="tbtn" target="_blank" rel="noopener" aria-disabled="true">Preparing&hellip;</a>
+    <a class="tbtn" id="tbtn" target="_blank" rel="noopener" aria-disabled="true">Generate today's token</a>
     <div class="chip no" id="chip"><span class="dot"></span><span id="chipTxt">Loading&hellip;</span></div>
   </div>
 
@@ -163,7 +167,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
 </div>
 
 </div>
-<div class="badmsg" id="bad"><div><h2>Link not valid</h2><p>Please use the private link you were given.</p></div></div>
+<div class="badmsg" id="bad"><div><h2 id="badH">Link not valid</h2><p id="badP">Please use the private link you were given.</p></div></div>
 <script>
 (function () {
   var EXEC = 'https://script.google.com/macros/s/AKfycbxdk0rSXzMg-Ii8NzIGRkW0KUbOAvcVY3FbDCY0mHp478te_sjhl4v2PsMrblt0JXC5fQ/exec';
@@ -227,7 +231,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     $('chip').hidden = false;
     $('chip').className = 'chip ' + (t.tokenToday ? 'ok' : 'no');
     $('chipTxt').textContent = t.tokenToday ? 'Connected today ' + t.tokenAt : 'Not logged in today';
-    LBL = t.tokenToday ? 'Regenerate token' : "Generate today's token"; paintBtn(); if (loginFor !== base()) prepLogin();
+    LBL = t.tokenToday ? 'Regenerate token' : "Generate today's token"; loginUrl = (/^https:\/\/kite\.zerodha\.com\//.test(t.loginUrl || '')) ? t.loginUrl : ''; paintBtn();
     var nf = $('nifty');
     if (d.nifty === null || d.nifty === undefined){ nf.textContent = '—'; nf.className = ''; }
     else { nf.textContent = (d.nifty < 0 ? '▼ ' : '▲ ') + fmtP2(d.nifty); nf.className = cls(d.nifty); }
@@ -240,10 +244,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     $('tHigh').innerHTML = tradeRows(d.theta.high); $('tLow').innerHTML = tradeRows(d.theta.low);
     $('asof').textContent = 'Data as of ' + (t.lastUpdated || '—');
     if (d.members && d.members.length && !MEMBERS.length) buildPicker(d.members, d.investor);
+    saveKey();
     hideSplash('data');
   }
   function load(force, done){
-    var my = ++seq, t1 = lastLoad = performance.now(), ck = 'diskD_' + base();
+    var my = ++seq, t1 = lastLoad = performance.now(), ck = 'diskD2_' + base();
     if (!force) { try { var c = localStorage.getItem(ck); if (c) { render(JSON.parse(c)); } } catch (e) {} }   // last figures from this phone, shown at once
     getJson(EXEC + '?' + base() + (force ? '&r=1' : '')).then(function(d){
       if (my !== seq) return;
@@ -268,25 +273,18 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     sel.onchange = function(){
       CUR = sel.value;
       try { localStorage.setItem('diskInv_' + KEY.g.slice(0, 8), CUR); } catch (e) {}
-      $('chip').hidden = true; loginUrl = ''; loginFor = ''; paintBtn(); load(false);
+      $('chip').hidden = true; loginUrl = ''; paintBtn(); load(false);
     };
     if (CUR !== first) { $('chip').hidden = true; load(false); }
   }
   // ---- buttons ----
-  // The token button is a plain link: the Zerodha address is fetched ahead of time, so tapping does no async work.
-  var LBL = "Generate today's token", loginUrl = '', loginFor = '', loginSeq = 0;
+  // The token button is a plain link; its Zerodha address (api_key + v=3 only) arrives in the figures payload.
+  var LBL = "Generate today's token", loginUrl = '';
   function paintBtn(){
     var b = $('tbtn');
-    if (loginUrl) { b.href = loginUrl; b.removeAttribute('aria-disabled'); b.textContent = LBL; }
-    else { b.removeAttribute('href'); b.setAttribute('aria-disabled', 'true'); b.textContent = 'Preparing\u2026'; }
-  }
-  function prepLogin(){
-    var my = ++loginSeq, f = base();
-    loginFor = f; loginUrl = ''; paintBtn();
-    getJson(EXEC + '?' + f.replace('api=1', 'api=login')).then(function(d){
-      if (my !== loginSeq) return;
-      if (d && d.url) { loginUrl = d.url; paintBtn(); } else { loginFor = ''; setTimeout(function(){ if (my === loginSeq && !loginUrl) prepLogin(); }, 4000); }
-    }).catch(function(){ if (my !== loginSeq) return; loginFor = ''; setTimeout(function(){ if (my === loginSeq && !loginUrl) prepLogin(); }, 4000); });
+    b.textContent = LBL;
+    if (loginUrl) { b.href = loginUrl; b.removeAttribute('aria-disabled'); }
+    else { b.removeAttribute('href'); b.setAttribute('aria-disabled', 'true'); }
   }
   // Coming back from Zerodha (or any other app): refresh so "Connected today" shows.
   var lastLoad = 0;
@@ -300,6 +298,22 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
   var sl = $('splashLogo');
   function markLogo(){ if (T.logo === null) T.logo = Math.round(performance.now()); }
   if (sl.complete) markLogo(); else sl.addEventListener('load', markLogo);
+  function saveKey(){
+    if (KEY.s || KEY.g) { var o = new URLSearchParams(); if (KEY.s) o.set('s', KEY.s); if (KEY.g) { o.set('g', KEY.g); if (CUR) o.set('i', CUR); } try { localStorage.setItem('disk', o.toString()); } catch (e) {} }
+  }
+  // The home-screen icon must start at the full private link, so the web manifest is generated here.
+  function setManifest(qs){
+    try {
+      var base = location.origin + '/disk-app/';
+      var man = { id: base, name: 'DISK', short_name: 'DISK', description: 'DISK Alpha and Theta gains',
+        start_url: base + '?' + qs, scope: '/disk-app/', display: 'standalone', orientation: 'portrait',
+        background_color: '#ffffff', theme_color: '#ffffff',
+        icons: [ { src: base + 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: base + 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' } ] };
+      var l = document.createElement('link'); l.rel = 'manifest';
+      l.href = URL.createObjectURL(new Blob([JSON.stringify(man)], { type: 'application/manifest+json' }));
+      document.head.appendChild(l);
+    } catch (e) {}
+  }
   // ---- start ----
   var q = new URLSearchParams(location.search);
   var out = new URLSearchParams();
@@ -309,12 +323,14 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     try { var saved = new URLSearchParams(localStorage.getItem('disk') || ''); KEYS.forEach(function(k){ if (saved.get(k)) out.set(k, saved.get(k)); }); } catch (e) {}
   }
   if (out.get('s') || out.get('g')) {
-    try { localStorage.setItem('disk', out.toString()); } catch (e) {}
+    if (!q.get('s') && !q.get('g')) { try { history.replaceState(null, '', location.pathname + '?' + out.toString()); } catch (e) {} }   // key came from storage: put it back in the address
+    setManifest(out.toString());
     KEY = { s: out.get('s') || '', g: out.get('g') || '', i: out.get('i') || '' };
     if (KEY.g) { var lastI = ''; try { lastI = localStorage.getItem('diskInv_' + KEY.g.slice(0, 8)) || ''; } catch (e) {} CUR = KEY.i || lastI; }
-    prepLogin();                         // Zerodha address in parallel with the figures
     load(false);
   } else {
+    $('badH').textContent = 'No private link found';
+    $('badP').textContent = 'Open the private link you were given once in Safari, then add it to the Home Screen again.';
     splash.style.display = 'none'; $('app').style.display = 'none'; $('bad').style.display = 'flex';
   }
 })();
