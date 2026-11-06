@@ -3,13 +3,14 @@
 <head>
 <!--
   Script Name : DISK app shell (index.html)
-  Version     : 2.2.0
+  Version     : 2.2.1
   Last Edit   : 06-Nov-26
   Change Log  :
     1.0.0 | 05-Nov-26 | Shell loads the Apps Script page in an iframe; splash and install icons
     2.0.0 | 05-Nov-26 | Shell reads the figures itself from the JSON mode of the same web app
             (fetch, no Google cookies, no iframe), so signed-in browsers are no longer
             redirected to a Google sign-in page. Same look; splash and retry screen kept.
+    2.2.1 | 06-Nov-26 | Zerodha address is fetched in parallel with the figures (button ready sooner).
     2.2.0 | 06-Nov-26 | Token button is a real link (target _blank) whose Zerodha address is fetched in
             advance and after every investor change; 'Preparing...' until ready. No window.open
             on tap (blocked on Android Chrome / iOS PWAs). Figures refresh when the app becomes
@@ -311,6 +312,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     try { localStorage.setItem('disk', out.toString()); } catch (e) {}
     KEY = { s: out.get('s') || '', g: out.get('g') || '', i: out.get('i') || '' };
     if (KEY.g) { var lastI = ''; try { lastI = localStorage.getItem('diskInv_' + KEY.g.slice(0, 8)) || ''; } catch (e) {} CUR = KEY.i || lastI; }
+    prepLogin();                         // Zerodha address in parallel with the figures
     load(false);
   } else {
     splash.style.display = 'none'; $('app').style.display = 'none'; $('bad').style.display = 'flex';
