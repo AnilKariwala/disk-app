@@ -3,13 +3,16 @@
 <head>
 <!--
   Script Name : DISK app shell (index.html)
-  Version     : 2.3.0
-  Last Edit   : 06-Nov-26
+  Version     : 2.4.0
+  Last Edit   : 11-Nov-26
   Change Log  :
     1.0.0 | 05-Nov-26 | Shell loads the Apps Script page in an iframe; splash and install icons
     2.0.0 | 05-Nov-26 | Shell reads the figures itself from the JSON mode of the same web app
             (fetch, no Google cookies, no iframe), so signed-in browsers are no longer
             redirected to a Google sign-in page. Same look; splash and retry screen kept.
+    2.4.0 | 11-Nov-26 | Token chip has three states from the order worker's last confirmed run:
+            green 'Working', amber 'Logged in, not yet confirmed', red 'Zerodha rejected - log in
+            again' (or 'Not logged in today'). Saved-figures key renamed diskD3_.
     2.3.0 | 06-Nov-26 | Home-screen icon keeps the key: web manifest generated at run time with
             start_url = the full private link (scope /disk-app/); key saved after the first valid
             load and restored into the address if the app opens without one; clear message when
@@ -106,6 +109,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
 .badmsg h2{margin:0 0 8px}
 .tbtn{display:block;text-align:center;text-decoration:none}
 .tbtn[aria-disabled="true"]{opacity:.6;pointer-events:none}
+.chip.wait{background:var(--alphasoft);color:var(--alpha)}
 </style>
 </head>
 <body>
@@ -229,8 +233,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     var t = d.token;
     $('msg').style.display = 'none';
     $('chip').hidden = false;
-    $('chip').className = 'chip ' + (t.tokenToday ? 'ok' : 'no');
-    $('chipTxt').textContent = t.tokenToday ? 'Connected today ' + t.tokenAt : 'Not logged in today';
+    if (t.state) { $('chip').className = 'chip ' + (t.state === 'ok' ? 'ok' : (t.state === 'wait' ? 'wait' : 'no')); $('chipTxt').textContent = t.stateText; }   // from the worker's last confirmed run
+    else { $('chip').className = 'chip ' + (t.tokenToday ? 'ok' : 'no'); $('chipTxt').textContent = t.tokenToday ? 'Connected today ' + t.tokenAt : 'Not logged in today'; }
     LBL = t.tokenToday ? 'Regenerate token' : "Generate today's token"; loginUrl = (/^https:\/\/kite\.zerodha\.com\//.test(t.loginUrl || '')) ? t.loginUrl : ''; paintBtn();
     var nf = $('nifty');
     if (d.nifty === null || d.nifty === undefined){ nf.textContent = '—'; nf.className = ''; }
@@ -248,7 +252,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Bl
     hideSplash('data');
   }
   function load(force, done){
-    var my = ++seq, t1 = lastLoad = performance.now(), ck = 'diskD2_' + base();
+    var my = ++seq, t1 = lastLoad = performance.now(), ck = 'diskD3_' + base();
     if (!force) { try { var c = localStorage.getItem(ck); if (c) { render(JSON.parse(c)); } } catch (e) {} }   // last figures from this phone, shown at once
     getJson(EXEC + '?' + base() + (force ? '&r=1' : '')).then(function(d){
       if (my !== seq) return;
